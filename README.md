@@ -9,8 +9,8 @@ It has to be used within the cloned repository.
 - `./AnnotationsNovellas/`: Annotations of character speech and embedded narrations in Heinrich von Kleists novellas
 - `./Texte/Dramas/`: Plain Texts of Kleists Plays. Source: [GerDraCor](https://dracor.org/ger)
 - `./Texte/Novellas/`: Plain Texts der Novellas Kleists. Source: [TextGrid](https://textgrid.de/de/digitale-bibliothek)
-- `./narrview/`: Python Package zur Visualisierung narratologischer Annotations
-- `./explore_annotations.ipynb`: Jupyter Notebook zur Exploration der Annotations
+- `./narrview/`: Small Python package for visualization of narratological annotations using Plotly
+- `./explore_annotations.ipynb`: Jupyter Notebook for annotation exploration
 
 
 ## Requirements for the Jupyter Notebook / `narrview`
