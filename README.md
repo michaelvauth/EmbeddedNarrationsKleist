@@ -7,8 +7,8 @@ It has to be used within the cloned repository.
 ## Overview and Ressources
 - `./AnnotationsDramas/`: Annotations of character speech and embedded narrations in Heinrich von Kleist's dramas
 - `./AnnotationsNovellas/`: Annotations of character speech and embedded narrations in Heinrich von Kleist's novellas
-- `./Texts/Dramas/`: Plain Texts of Kleists Plays. Source: [GerDraCor](https://dracor.org/ger)
-- `./Texts/Novellas/`: Plain Texts of Novellas Kleists. Source: [TextGrid](https://textgrid.de/de/digitale-bibliothek)
+- `./Texts/Dramas/`: Plain Texts of Kleist's dramas. Source: [GerDraCor](https://dracor.org/ger)
+- `./Texts/Novellas/`: Plain Texts of Kleist's novellas. Source: [TextGrid](https://textgrid.de/de/digitale-bibliothek)
 - `./narrview/`: Small Python package for visualization of narratological annotations using Plotly
 - `./explore_annotations.ipynb`: Jupyter Notebook for annotation exploration
 
