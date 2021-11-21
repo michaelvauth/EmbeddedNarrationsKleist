@@ -1,4 +1,7 @@
 # Kleist's Embedded Narrations
+
+[![DOI](https://zenodo.org/badge/427284167.svg)](https://zenodo.org/badge/latestdoi/427284167)
+
 This repository contains the annotation data used for my PhD thesis
 (*Zur Annotation intradiegetischen Erzählens. Binnenerzählungen im literarischen Werk Heinrich von Kleists*).
 Additionaly, the notebook `explore_annotations.ipynb` provides a quick overview of the annotations.
