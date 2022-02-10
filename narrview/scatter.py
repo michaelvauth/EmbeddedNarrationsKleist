@@ -1,9 +1,18 @@
 import os
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 
 def format_annotation_text(text: str) -> str:
+    """Creates HTML string for the annotation text in the scatter plot.
+
+    Args:
+        text (str): The annotation string.
+
+    Returns:
+        str: The html string.
+    """
     while '  ' in text:
         text = text.replace('  ', ' ')
 
@@ -21,6 +30,15 @@ def format_annotation_text(text: str) -> str:
 
 
 def split_by_prop(df: pd.DataFrame, prop: str = 'prop:character_speech') -> pd.DataFrame:
+    """Splits a specified property column in annotation dataframes in multiple rows if multiple property values exists.
+
+    Args:
+        df (pd.DataFrame): Annotation DataFrame.
+        prop (str, optional): [description]. Defaults to 'prop:character_speech'.
+
+    Returns:
+        pd.DataFrame: Modiefied DataFrame.
+    """
     output_list = []
     for _, row in df.iterrows():
         row_dict = dict(row)
@@ -34,8 +52,16 @@ def split_by_prop(df: pd.DataFrame, prop: str = 'prop:character_speech') -> pd.D
 def subcorpus_scatter(
         corpus: str = 'Novellas',
         tags: list = ['secondary_narration'],
-        color_column: str = 'prop:speech_representation',):
+        color_column: str = 'prop:speech_representation',) -> None:
+    """Plots annotation for the given corpus.
 
+    Args:
+        corpus (str, optional): Which corpus to plot. Defaults to 'Novellas'.
+        tags (list, optional): A list of all tags to be included in the scatter plot. 'direct_speech', 'indirect_speech',
+        'narrated_character_speech', 'secondary_narration' or 'tertiary_narration'. Defaults to ['secondary_narration'].
+        color_column (str, optional): Either 'tag', 'prop:informativeness', 'prop:falsification_status'
+        or 'prop:relation_narrator-event_time'. Defaults to 'prop:speech_representation'.
+    """
     sum_df = pd.DataFrame()
     for file in os.listdir(f'Annotations{corpus}/'):
         loaded_df = pd.read_json(f'Annotations{corpus}/{file}')
@@ -69,12 +95,31 @@ def subcorpus_scatter(
     return fig
 
 
+subcorpus_scatter()
+
+
 def single_text_scatter(
         subcorpus: str = 'Dramas',
         text: str = '1807-penthesilea',
         tags: list = ['secondary_narration'],
         y_column: str = 'prop:speaker',
-        color_column: str = 'prop:relation_narrator-event_time'):
+        color_column: str = 'prop:relation_narrator-event_time') -> go.Figure:
+    """Plot the annotation of a single text as a plotly scatter plot.
+
+    Args:
+        subcorpus (str, optional): 'Novellas' or 'Dramas'. Defaults to 'Dramas'.
+        text (str, optional): In case you choosed 'Novellas' as corpus: "1807-erdbeben", "1808-marquise", "1810-caecilie", "1810-kohlhaas", "1811-findling", "1811-verlobung", "1811-zweikampf"
+            In case you chooses 'Dramas' as corpus: "1802-schroffenstein", "1806-amphitryon", "1806-krug", "1807-penthesilea", "1808-hermannsschlacht", "1808-kaethchen", "1810-homburg". Defaults to '1807-penthesilea'.
+        tags (list, optional): A list of all tags to be included in the scatter plot. 'direct_speech', 'indirect_speech',
+            'narrated_character_speech', 'secondary_narration' or 'tertiary_narration'. Defaults to ['secondary_narration'].
+        y_column (str, optional): Eather the annotations tag or a specified property: 'prop:speaker', 'prop:addressee', 'tag', 'prop:character_speech', 'prop:informativeness', 'prop:falsification_status', 'prop:relation_narrator-event_time'.
+            Defaults to 'prop:speaker'.
+        color_column (str, optional): Either 'tag', 'prop:informativeness', 'prop:falsification_status'
+            or 'prop:relation_narrator-event_time'. Defaults to 'prop:relation_narrator-event_time'.
+
+    Returns:
+        [type]: [description]
+    """
 
     sum_df = pd.read_json(
         f'Annotations{subcorpus}/{text}_embedded_narrations.json')
@@ -94,7 +139,6 @@ def single_text_scatter(
             prop=y_column
         )
 
-    title_tags = [f'<{tag}>' for tag in tags]
     height = len(sum_df[y_column].unique()) * \
         30 if len(sum_df[y_column].unique()) > 10 else 500
     fig = px.scatter(
