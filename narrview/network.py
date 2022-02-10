@@ -2,7 +2,8 @@ from email.generator import Generator
 from msilib.schema import Error
 import os
 import difflib
-from turtle import width
+from platform import node
+from turtle import pos, width
 import pandas as pd
 import networkx as nx
 from pathy import importlib
@@ -138,6 +139,35 @@ def format_network_stats(stats_df: pd.DataFrame, character: str) -> str:
         stats_html_string += '<b>' + key.upper() + '</b>' + ' = '
         stats_html_string += str(dict(stats_df.loc[character])[key]) + '<br>'
     return stats_html_string
+
+
+def get_node_data(
+        pos_dict: dict,
+        speaker_size_dict: dict,
+        node_factor: int,
+        node_alpha: int,
+        stats: pd.DataFrame):
+    speakers = list(speaker_size_dict)
+    x_positions = [pos_dict[speaker][0] for speaker in speakers]
+    y_positions = [pos_dict[speaker][1] for speaker in speakers]
+    marker_sizes = [speaker_size_dict[speaker] *
+                    node_factor + node_alpha for speaker in speakers]
+    node_label = [speaker.upper().replace('_', ' ')
+                  for speaker in speakers]
+    hover_text = [
+        format_network_stats(
+            stats_df=stats,
+            character=speaker)
+        for speaker in speakers
+    ]
+
+    return {
+        'x_pos': x_positions,
+        'y_pos': y_positions,
+        'marker_size': marker_sizes,
+        'node_label': node_label,
+        'hover_text': hover_text
+    }
 
 
 class Network:
@@ -300,49 +330,48 @@ class Network:
             )
 
         # plot nodes
-        for speaker in speaker_size:
-            # plot indegree
-            fig.add_trace(
-                go.Scatter(
-                    x=[self.pos[speaker][0]],
-                    y=[self.pos[speaker][1]],
-                    opacity=1,
-                    marker={
-                        'size': speaker_size[speaker] * node_factor + node_alpha,
-                        'color': 'black',
-                        'opacity': 0.65
-                    },
-                    text=format_network_stats(
-                        stats_df=stats, character=speaker),
-                    textposition='top center',
-                    mode='markers',
-                    legendgroup=speaker,
-                    showlegend=False,
-                    hoverinfo='text',
-                    textfont_size=speaker_size[speaker] *
-                    node_factor + node_alpha
-                )
+        node_data = get_node_data(
+            pos_dict=self.pos,
+            speaker_size_dict=speaker_size,
+            node_factor=node_factor,
+            node_alpha=node_alpha,
+            stats=stats
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=node_data['x_pos'],
+                y=node_data['y_pos'],
+                marker={
+                    'size': node_data['marker_size'],
+                    'color': 'black',
+                    'opacity': 0.65
+                },
+                text=node_data['hover_text'],
+                textposition='top center',
+                mode='markers',
+                showlegend=False,
+                hoverinfo='text',
+                textfont_size=node_data['marker_size']
             )
-            fig.add_trace(
-                go.Scatter(
-                    x=[self.pos[speaker][0]],
-                    y=[self.pos[speaker][1]],
-                    opacity=1,
-                    marker={
-                        'size': speaker_size[speaker] * node_factor + node_alpha,
-                        'color': 'black',
-                        'opacity': 0.65
-                    },
-                    text=speaker.upper().replace('_', ' '),
-                    textposition='top center',
-                    mode='text',
-                    legendgroup=speaker,
-                    showlegend=False,
-                    hoverinfo='text',
-                    textfont_size=speaker_size[speaker] *
-                    node_factor + node_alpha
-                )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=node_data['x_pos'],
+                y=node_data['y_pos'],
+                opacity=1,
+                marker={
+                    'size': node_data['marker_size'],
+                    'color': 'black',
+                    'opacity': 0.65
+                },
+                text=node_data['node_label'],
+                textposition='top center',
+                mode='text',
+                showlegend=False,
+                hoverinfo='text',
+                textfont_size=node_data['marker_size']
             )
+        )
 
         fig.update_layout(
             template="simple_white",
