@@ -4,6 +4,17 @@ import plotly.graph_objects as go
 from IPython.display import display
 from dataclasses import dataclass
 from typing import List
+from narrview.scatter import single_text_scatter
+
+
+plays = [
+    '1802-schroffenstein', '1806-krug', '1806-amphitryon', '1807-penthesilea',
+    '1808-kaethchen', '1808-hermannsschlacht', '1810-homburg'
+]
+stories = [
+    '1807-erdbeben', '1810-kohlhaas', '1811-zweikampf', '1808-marquise',
+    '1811-verlobung', '1811-findling', '1810-caecilie'
+]
 
 
 @dataclass
@@ -26,14 +37,19 @@ def format_string_list(str_list: list) -> str:
 
 
 def get_edges(
-        corpus: str = 'Novellas',
         text: str = '1810-kohlhaas',
         network_annotations: str = 'character_speech',
         start_point: float = 0,
         end_point: int = 1.0):
 
-    speech_data = pd.read_json(
-        f'Annotations{corpus}/{text}_embedded_narrations.json')
+    if text in stories:
+        speech_data = pd.read_json(
+            f'AnnotationsNovellas/{text}_embedded_narrations.json')
+    elif text in plays:
+        speech_data = pd.read_json(
+            f'AnnotationsDramas/{text}_embedded_narrations.json')
+    else:
+        raise ValueError(f'"{text}" is no valid title!')
 
     # filter by start and end point
     max_end_point = max(speech_data.end_point)
@@ -46,7 +62,7 @@ def get_edges(
 
     # filter by annotation type
     if network_annotations == 'character_speech':
-        if corpus == 'Dramas':
+        if text == plays:
             raise ValueError(
                 'For the dramas only networks based on embedded narrations are possible.')
         else:
@@ -133,6 +149,20 @@ def format_network_stats(stats_df: pd.DataFrame, character: str) -> str:
     return stats_html_string
 
 
+def norm_col(value: float, values: pd.Series) -> float:
+    """Function to normalize network metrics relativly to the other nodes.
+    Changes all network metrics to a float between 0 and 1.0 depending on the other node's metrics.
+
+    Args:
+        value (float): the network metric value of a given node
+        values (pd.Series): the network metric values of all nodes
+
+    Returns:
+        float: normalized network metric value
+    """
+    return value / sum(values)
+
+
 def get_node_data(
         pos_dict: dict,
         speaker_size_dict: dict,
@@ -165,7 +195,6 @@ def get_node_data(
 class Network:
     def __init__(
             self,
-            corpus: str = 'Novellas',
             text: str = '1810-kohlhaas',
             network_annotations: str = 'character_speech',
             start_point: float = 0,
@@ -181,11 +210,18 @@ class Network:
             end_point (int, optional): Which text parts should be included. Defaults to 1.0.
             network_layout (callable, optional): A [networkx layout function](https://networkx.org/documentation/stable/reference/drawing.html). Defaults to nx.drawing.layout.kamada_kawai_layout.
         """
-
         self.text = text
+        self.included_tags = [
+            'direct_speech', 'indirect_speech', 'narrated_character_speech'
+        ]
+        if network_annotations == 'embedded_narrations':
+            self.included_tags = [
+                'secondary_narrations', 'tertiary_narrations'
+            ]
+        self.start_point = start_point
+        self.end_point = end_point
         self.edges = list(
             get_edges(
-                corpus=corpus,
                 text=text,
                 network_annotations=network_annotations,
                 start_point=start_point,
@@ -232,7 +268,8 @@ class Network:
             node_factor: float = 100.0,
             node_alpha: int = 3,
             plot_stats: bool = True,
-            print_title: bool = False):
+            print_title: bool = False,
+            plot_scatter: bool = False):
         """Plots network as plotly graph.
 
         Args:
@@ -242,9 +279,14 @@ class Network:
             plot_stats (bool, optional): Whether to plot the stats as `pandas.DataFrame`. Defaults to True.
             print_title (bool, optional): Whether to plot the title of the plottet Text. Defaults to False.
         """
-
-        def norm_col(value: float, values: pd.Series) -> float:
-            return value / sum(values)
+        if plot_scatter:
+            single_text_scatter(
+                text=self.text,
+                tags=self.included_tags,
+                color_column='prop:addressee',
+                start_point=self.start_point,
+                end_point=self.end_point
+            ).show()
 
         plot_edges = self.edges
         stats = self.stats()

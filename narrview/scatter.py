@@ -4,6 +4,16 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
+plays = [
+    '1802-schroffenstein', '1806-krug', '1806-amphitryon', '1807-penthesilea',
+    '1808-kaethchen', '1808-hermannsschlacht', '1810-homburg'
+]
+stories = [
+    '1807-erdbeben', '1810-kohlhaas', '1811-zweikampf', '1808-marquise',
+    '1811-verlobung', '1811-findling', '1810-caecilie'
+]
+
+
 def format_annotation_text(text: str) -> str:
     """Creates HTML string for the annotation text in the scatter plot.
 
@@ -95,15 +105,23 @@ def subcorpus_scatter(
     return fig
 
 
-subcorpus_scatter()
+def get_text_part(annotation_df: pd.DataFrame, sp: float = 0, ep: float = 1) -> pd. DataFrame:
+    max_end_point = max(annotation_df.end_point)
+    abs_start_point = sp * max_end_point
+    abs_end_point = ep * max_end_point
+    return annotation_df[
+        (annotation_df.start_point >= abs_start_point) &
+        (annotation_df.end_point <= abs_end_point)
+    ].copy()
 
 
 def single_text_scatter(
-        subcorpus: str = 'Dramas',
         text: str = '1807-penthesilea',
         tags: list = ['secondary_narration'],
         y_column: str = 'prop:speaker',
-        color_column: str = 'prop:relation_narrator-event_time') -> go.Figure:
+        color_column: str = 'prop:relation_narrator-event_time',
+        start_point: float = 0,
+        end_point: float = 1.0) -> go.Figure:
     """Plot the annotation of a single text as a plotly scatter plot.
 
     Args:
@@ -120,9 +138,17 @@ def single_text_scatter(
     Returns:
         [type]: [description]
     """
+    if text in stories:
+        sum_df = pd.read_json(
+            f'AnnotationsNovellas/{text}_embedded_narrations.json')
+    elif text in plays:
+        sum_df = pd.read_json(
+            f'AnnotationsDramas/{text}_embedded_narrations.json')
+    else:
+        raise ValueError(f'"{text}" is no valid title!')
 
-    sum_df = pd.read_json(
-        f'Annotations{subcorpus}/{text}_embedded_narrations.json')
+    sum_df = get_text_part(annotation_df=sum_df, sp=start_point, ep=end_point)
+
     sum_df['size'] = sum_df['end_point'] - sum_df['start_point']
     sum_df['Annotation'] = [format_annotation_text(
         an) for an in sum_df['annotation']]
@@ -139,8 +165,8 @@ def single_text_scatter(
             prop=y_column
         )
 
-    height = len(sum_df[y_column].unique()) * \
-        30 if len(sum_df[y_column].unique()) > 10 else 500
+    height = (len(sum_df[y_column].unique()) * 30) + 300
+    # if len(sum_df[y_column].unique()) > 10 else 1000
     fig = px.scatter(
         sum_df,
         y=y_column,
@@ -151,7 +177,10 @@ def single_text_scatter(
         title=f'{", ".join(tags)} in Kleist\'s {text.upper()}',
         marginal_x='histogram',
         marginal_y='histogram',
+    )
+    fig.update_layout(
+        template="simple_white",
+        width=1000,
         height=height
     )
-
     return fig
