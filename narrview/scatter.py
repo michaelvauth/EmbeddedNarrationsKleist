@@ -80,6 +80,7 @@ def subcorpus_scatter(
             ignore_index=True
         )
 
+    sum_df = sum_df[sum_df.tag.isin(tags)].copy()
     sum_df['size'] = sum_df['end_point'] - sum_df['start_point']
     sum_df['Annotation'] = [format_annotation_text(
         an) for an in sum_df['annotation']]
@@ -147,6 +148,7 @@ def single_text_scatter(
     else:
         raise ValueError(f'"{text}" is no valid title!')
 
+    sum_df = sum_df[sum_df.tag.isin(tags)].copy()
     sum_df = get_text_part(annotation_df=sum_df, sp=start_point, ep=end_point)
 
     sum_df['size'] = sum_df['end_point'] - sum_df['start_point']
