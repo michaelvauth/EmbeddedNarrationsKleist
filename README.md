@@ -7,6 +7,8 @@ This repository contains the annotation data used for my PhD thesis
 Additionaly, the notebook `explore_annotations.ipynb` provides a quick overview of the annotations including network vizualizations.
 It has to be used within the cloned repository.
 
+**Alternatively, visit the [annotation dashboard](http://kleist-dashboard.herokuapp.com/) to explore the annotations.**
+
 ## Overview and Ressources
 
 - `./AnnotationsDramas/`: Annotations of character speech and embedded narrations in Heinrich von Kleist's dramas
